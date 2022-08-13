@@ -1,3 +1,91 @@
-from django.shortcuts import render
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.views.generic import ListView, DetailView
 
-# Create your views here.
+from ads.models import Ad, Category
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class IndexView(View):
+	def get(self, request):
+		return JsonResponse({'status': 'ok'}, status=200)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AdView(ListView):
+	model = Ad
+
+	def get(self, request, *args, **kwargs):
+		super().get(request, *args, **kwargs)
+
+		response = self.object_list
+		result = []
+		for elem in response:
+			result.append({
+				'id': elem.id,
+				'name': elem.name,
+				'author': elem.author,
+				'price': elem.price,
+				'description': elem.description,
+				'address': elem.address,
+				'is_published': elem.is_published,
+			})
+		return JsonResponse(result, safe=False)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CategoryView(ListView):
+	model = Category
+
+	def get(self, request, *args, **kwargs):
+		super().get(request, *args, **kwargs)
+
+		response = self.object_list
+		result = []
+		for elem in response:
+			result.append({
+				'id': elem.id,
+				'name': elem.name,
+			})
+		return JsonResponse(result, safe=False)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CategoryDetailView(DetailView):
+	model = Category
+
+	def get(self, request, *args, **kwargs):
+		try:
+			super().get(request, *args, **kwargs)
+			category = self.get_object()
+		except:
+			return JsonResponse({'error': 'Not found'}, status=404)
+
+		return JsonResponse({
+				'id': category.id,
+				'name': category.name,
+			}, safe=False)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AdDetailView(DetailView):
+	model = Ad
+
+	def get(self, request, *args, **kwargs):
+		try:
+			super().get(request, *args, **kwargs)
+			ad = self.get_object()
+		except:
+			return JsonResponse({'error': 'Not found'}, status=404)
+
+		return JsonResponse({
+				'id': ad.id,
+				'name': ad.name,
+				'author': ad.author,
+				'price': ad.price,
+				'description': ad.description,
+				'address': ad.address,
+				'is_published': ad.is_published,
+			}, safe=False)
