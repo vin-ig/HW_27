@@ -4,7 +4,7 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.views.generic import ListView, DetailView
+from django.views.generic import DetailView
 
 from ads.models import Ad, Category
 
@@ -16,13 +16,10 @@ class IndexView(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class AdView(ListView):
-	model = Ad
+class AdView(View):
+	def get(self, request):
 
-	def get(self, request, *args, **kwargs):
-		super().get(request, *args, **kwargs)
-
-		response = self.object_list
+		response = Ad.objects.all()
 		result = []
 		for elem in response:
 			result.append({
@@ -63,13 +60,11 @@ class AdView(ListView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class CategoryView(ListView):
+class CategoryView(View):
 	model = Category
 
-	def get(self, request, *args, **kwargs):
-		super().get(request, *args, **kwargs)
-
-		response = self.object_list
+	def get(self, request):
+		response = Category.objects.all()
 		result = []
 		for elem in response:
 			result.append({
@@ -97,11 +92,8 @@ class CategoryDetailView(DetailView):
 	model = Category
 
 	def get(self, request, *args, **kwargs):
-		try:
-			super().get(request, *args, **kwargs)
-			category = self.get_object()
-		except:
-			return JsonResponse({'error': 'Not found'}, status=404)
+		super().get(request, *args, **kwargs)
+		category = self.get_object()
 
 		return JsonResponse({
 				'id': category.id,
@@ -114,11 +106,8 @@ class AdDetailView(DetailView):
 	model = Ad
 
 	def get(self, request, *args, **kwargs):
-		try:
-			super().get(request, *args, **kwargs)
-			ad = self.get_object()
-		except:
-			return JsonResponse({'error': 'Not found'}, status=404)
+		super().get(request, *args, **kwargs)
+		ad = self.get_object()
 
 		return JsonResponse({
 				'id': ad.id,
